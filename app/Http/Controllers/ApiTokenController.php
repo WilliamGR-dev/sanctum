@@ -34,9 +34,7 @@ class ApiTokenController extends Controller
         $user = User::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
-            ]);
+            return response()->json(['error'=>'The provided credentials are incorrect.'], 401);
         }
 
         $user->tokens()->where('tokenable_id', $user->id)->delete();
@@ -74,7 +72,13 @@ class ApiTokenController extends Controller
 
         $token = $user->createToken( $request->device_name)->plainTextToken;
 
-        return response()->json(['token' => $token]);
+        return response()->json([
+            'token' => $token,
+            'email' => $user->email,
+            'password' => $user->password,
+            'name' => $user->name,
+            'created_at' => $user->created_at,
+            ]);
     }
 
     public function logout(Request $request)

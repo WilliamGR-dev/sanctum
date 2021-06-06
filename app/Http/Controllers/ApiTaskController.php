@@ -11,10 +11,21 @@ class ApiTaskController extends Controller
     //
     public function gettask(Request $request)
     {
-        $postsUser = DB::table('tasks')->where('user_id', $request->user_id)->get();
-        return response()->json([
-            'posts'=>$postsUser
-        ], 201);
+        if($request->user_id === $request->user()->id){
+            $postsUser = DB::table('tasks')->where('user_id', $request->user_id)->get();
+
+            if (!$postsUser){
+                return response()->json(["message"=>"Tache non trouvé"], 404);
+            }
+
+            return response()->json([
+                'posts'=>$postsUser
+            ], 201);
+        }
+        else{
+            return response()->json(["message"=>"Accès à la tâche non autorisé"], 403);
+        }
+
     }
 
     public function store(Request $request)
@@ -29,7 +40,7 @@ class ApiTaskController extends Controller
             'user_id' => $request->user_id,
         ]);
 
-        return response()->json(['msg' => 'Enregistrement effectué']);
+        return response()->json(['msg' => 'Enregistrement effectué'], 201);
     }
 
     public function destroy($id, Request $request)
